@@ -1,10 +1,12 @@
 'use client';
 import { useState, useRef } from 'react';
+import { useRouter } from 'next/navigation';
 import { useAuth } from './AuthProvider';
 import { X, ArrowRight, ArrowLeft, User, Building2, Landmark } from 'lucide-react';
 
 export default function AuthModal({ isOpen, onClose, initialTab }) {
   const { loginWithEmail, signupWithEmail, loginWithGoogle, validateInvestorCode, authError, setAuthError } = useAuth();
+  const router = useRouter();
   const [tab, setTab] = useState(initialTab || 'signin');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,14 +36,14 @@ export default function AuthModal({ isOpen, onClose, initialTab }) {
   // Login
   const handleLogin = async (e) => {
     e.preventDefault(); setIsSubmitting(true);
-    try { await loginWithEmail(email, password); handleClose(); } catch {}
+    try { await loginWithEmail(email, password); handleClose(); router.push('/dashboard'); } catch {}
     setIsSubmitting(false);
   };
 
   // Google
   const handleGoogle = async () => {
     setIsSubmitting(true);
-    try { await loginWithGoogle(); handleClose(); } catch {}
+    try { await loginWithGoogle(); handleClose(); router.push('/dashboard'); } catch {}
     setIsSubmitting(false);
   };
 
@@ -71,7 +73,7 @@ export default function AuthModal({ isOpen, onClose, initialTab }) {
     const code = investorDigits.join('');
     if (code.length < 6) { setAuthError('Please enter all 6 digits.'); setIsSubmitting(false); return; }
     const ok = await validateInvestorCode(code);
-    if (ok) { setCodeSuccess(true); setTimeout(() => handleClose(), 1500); }
+    if (ok) { setCodeSuccess(true); setTimeout(() => { handleClose(); router.push('/dashboard'); }, 1500); }
     setIsSubmitting(false);
   };
 
@@ -86,7 +88,7 @@ export default function AuthModal({ isOpen, onClose, initialTab }) {
   };
   const handleSignupSubmit = async () => {
     setIsSubmitting(true);
-    try { await signupWithEmail(signupData); handleClose(); } catch {}
+    try { await signupWithEmail(signupData); handleClose(); router.push('/dashboard'); } catch {}
     setIsSubmitting(false);
   };
 
