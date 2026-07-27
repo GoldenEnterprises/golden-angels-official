@@ -5,7 +5,7 @@ import { useAuth } from './AuthProvider';
 import {
   LayoutDashboard, Briefcase, Users, Newspaper, MessageSquare,
   Eye, Star, Bookmark, Settings, Bell, Search, Menu, X,
-  ChevronDown, Shield, LogOut, User, TrendingUp, Compass, HelpCircle, Rocket, Send, DollarSign, Wallet
+  ChevronDown, Shield, LogOut, User, TrendingUp, Compass, HelpCircle, Rocket, Send, DollarSign, Wallet, Sparkles
 } from 'lucide-react';
 import FloatingMessenger from './FloatingMessenger';
 
@@ -31,10 +31,12 @@ export default function LoggedInLayout({ children }) {
   const { user, logout } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchFocused, setSearchFocused] = useState(false);
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const profileRef = useRef(null);
   const searchRef = useRef(null);
 
@@ -46,6 +48,23 @@ export default function LoggedInLayout({ children }) {
     document.addEventListener('mousedown', handleClick);
     return () => document.removeEventListener('mousedown', handleClick);
   }, []);
+
+  // Detect mobile and set sidebar default
+  useEffect(() => {
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 900;
+      setIsMobile(mobile);
+      if (!mobile) setSidebarOpen(true);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Close sidebar on mobile when navigating
+  useEffect(() => {
+    if (isMobile) setSidebarOpen(false);
+  }, [pathname, isMobile]);
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' || e.type === 'click') {
@@ -209,6 +228,12 @@ export default function LoggedInLayout({ children }) {
         </div>
       </header>
 
+      {/* ═══ SIDEBAR OVERLAY (mobile) ═══ */}
+      <div 
+        className={`sidebar-overlay ${sidebarOpen && isMobile ? 'visible' : ''}`}
+        onClick={() => setSidebarOpen(false)}
+      />
+
       {/* ═══ SIDEBAR ═══ */}
       <aside className={`shell-sidebar ${sidebarOpen ? 'open' : 'collapsed'}`}>
         <nav className="sidebar-nav">
@@ -219,45 +244,119 @@ export default function LoggedInLayout({ children }) {
               <button
                 key={item.id}
                 className={`sidebar-item ${isActive(item.href) ? 'active' : ''}`}
-                onClick={() => router.push(item.href)}
+                onClick={() => { router.push(item.href); if (isMobile) setSidebarOpen(false); }}
                 title={item.label}
               >
                 <Icon size={18} className="sidebar-item-icon" />
-                {sidebarOpen && <span className="sidebar-item-label">{item.label}</span>}
-                {item.badge && sidebarOpen && <span className="sidebar-item-badge">{item.badge}</span>}
+                <span className="sidebar-item-label">{item.label}</span>
+                {item.badge && <span className="sidebar-item-badge">{item.badge}</span>}
               </button>
             );
           })}
         </nav>
 
-        {sidebarOpen && (
-          <div className="sidebar-footer">
-            <div className="sidebar-divider" />
-            <div className="sidebar-section-title">Quick Stats</div>
-            <div className="sidebar-stat">
-              <span>Portfolio Value</span>
-              <span className="gold-text">$4.2M</span>
-            </div>
-            <div className="sidebar-stat">
-              <span>Active Deals</span>
-              <span className="gold-text">7</span>
-            </div>
-            <div className="sidebar-stat">
-              <span>Network</span>
-              <span className="gold-text">1,247</span>
-            </div>
-            <div className="sidebar-divider" />
-            <a href="/contact" className="sidebar-help">
-              <HelpCircle size={14} /> Help & Support
-            </a>
+        <div className="sidebar-footer">
+          <div className="sidebar-divider" />
+          <div className="sidebar-section-title">Quick Stats</div>
+          <div className="sidebar-stat">
+            <span>Portfolio Value</span>
+            <span className="gold-text">$4.2M</span>
           </div>
-        )}
+          <div className="sidebar-stat">
+            <span>Active Deals</span>
+            <span className="gold-text">7</span>
+          </div>
+          <div className="sidebar-stat">
+            <span>Network</span>
+            <span className="gold-text">1,247</span>
+          </div>
+          <div className="sidebar-divider" />
+          <button 
+            onClick={() => { router.push('/pricing'); if (isMobile) setSidebarOpen(false); }}
+            style={{
+              width: '100%', padding: '12px 16px', background: 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))',
+              border: '1px solid rgba(212,175,55,0.3)', borderRadius: '10px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--gold)',
+              fontSize: '0.85rem', fontWeight: 700, transition: 'all 0.3s', marginBottom: '8px',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(212,175,55,0.25), rgba(212,175,55,0.1))'; e.currentTarget.style.boxShadow = '0 0 20px rgba(212,175,55,0.15)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'linear-gradient(135deg, rgba(212,175,55,0.15), rgba(212,175,55,0.05))'; e.currentTarget.style.boxShadow = 'none'; }}
+          >
+            <Sparkles size={16} /> Upgrade Plan
+          </button>
+          <a href="/contact" className="sidebar-help">
+            <HelpCircle size={14} /> Help & Support
+          </a>
+        </div>
       </aside>
 
       {/* ═══ MAIN CONTENT ═══ */}
-      <main className={`shell-main ${sidebarOpen ? '' : 'expanded'}`}>
+      <main className={`shell-main ${sidebarOpen && !isMobile ? '' : 'expanded'}`}>
         {children}
       </main>
+
+      {/* ═══ MOBILE BOTTOM NAV ═══ */}
+      <nav className="mobile-bottom-nav">
+        <button className={`mobile-bottom-nav-item ${pathname === '/dashboard' ? 'active' : ''}`} onClick={() => router.push('/dashboard')}>
+          <LayoutDashboard size={22} />
+          <span>Home</span>
+        </button>
+        <button className={`mobile-bottom-nav-item ${pathname === '/portfolio' ? 'active' : ''}`} onClick={() => router.push('/portfolio')}>
+          <Compass size={22} />
+          <span>Explore</span>
+        </button>
+        <button className={`mobile-bottom-nav-item`} onClick={() => setMobileSearchOpen(true)}>
+          <Search size={22} />
+          <span>Search</span>
+        </button>
+        <button className={`mobile-bottom-nav-item ${pathname === '/invest' ? 'active' : ''}`} onClick={() => router.push('/invest')}>
+          <DollarSign size={22} />
+          <span>Invest</span>
+        </button>
+        <button className={`mobile-bottom-nav-item`} onClick={() => setSidebarOpen(!sidebarOpen)}>
+          <Menu size={22} />
+          <span>Menu</span>
+        </button>
+      </nav>
+
+      {/* ═══ MOBILE SEARCH OVERLAY ═══ */}
+      {mobileSearchOpen && (
+        <div className="mobile-search-overlay" style={{ display: 'flex' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+            <div style={{ position: 'relative', flex: 1 }}>
+              <Search size={18} style={{ position: 'absolute', left: '16px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                autoFocus
+                type="text"
+                placeholder="Search companies, people, opportunities..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && searchQuery.trim()) { router.push(`/search?q=${encodeURIComponent(searchQuery)}`); setMobileSearchOpen(false); } }}
+              />
+            </div>
+            <button onClick={() => { setMobileSearchOpen(false); setSearchQuery(''); }} style={{ background: 'none', border: 'none', color: 'var(--gold)', fontSize: '0.95rem', fontWeight: 600, cursor: 'pointer', padding: '12px' }}>
+              Cancel
+            </button>
+          </div>
+          {searchQuery && (
+            <div style={{ flex: 1, overflowY: 'auto' }}>
+              {Object.entries(getSearchResults().reduce((acc, r) => { if (!acc[r.type]) acc[r.type] = []; acc[r.type].push(r); return acc; }, {})).map(([type, items]) => (
+                <div key={type} style={{ marginBottom: '20px' }}>
+                  <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--gold)', letterSpacing: '2px', marginBottom: '8px' }}>{type}</div>
+                  {items.map((item, idx) => (
+                    <button key={idx} onClick={() => { router.push(item.href || `/search?q=${encodeURIComponent(item.title)}`); setMobileSearchOpen(false); setSearchQuery(''); }}
+                      style={{ display: 'flex', flexDirection: 'column', width: '100%', padding: '12px', borderRadius: '8px', cursor: 'pointer', background: 'none', border: 'none', textAlign: 'left', transition: 'background 0.2s' }}
+                    >
+                      <span style={{ fontSize: '0.95rem', color: 'white' }}>{item.title}</span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{item.desc}</span>
+                    </button>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Floating Messenger */}
       <FloatingMessenger />

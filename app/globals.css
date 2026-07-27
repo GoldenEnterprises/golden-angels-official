@@ -2128,10 +2128,225 @@ ul, ol {
     padding: 16px;
   }
   .dash-right-sidebar { display: none; }
-  .shell-sidebar { display: none; }
-  .shell-main { margin-left: 0 !important; }
-  .topbar-center { display: none; }
-  .topbar-profile-info { display: none; }
+
+  /* ═══ MOBILE SIDEBAR: Slide-in Drawer ═══ */
+  .shell-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 280px;
+    z-index: 2000;
+    transform: translateX(-100%);
+    transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    display: flex !important;
+    border-right: 1px solid rgba(212,175,55,0.15);
+    box-shadow: none;
+    padding-top: 60px;
+  }
+  .shell-sidebar.open {
+    transform: translateX(0);
+    box-shadow: 8px 0 40px rgba(0,0,0,0.6);
+  }
+  .shell-sidebar.collapsed {
+    width: 280px;
+    transform: translateX(-100%);
+  }
+  .shell-sidebar.collapsed.open {
+    transform: translateX(0);
+  }
+
+  /* Sidebar overlay backdrop */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1999;
+    opacity: 0;
+    transition: opacity 0.35s ease;
+  }
+  .sidebar-overlay.visible {
+    display: block;
+    opacity: 1;
+  }
+
+  /* Mobile sidebar items bigger touch targets */
+  .sidebar-item {
+    padding: 14px 16px !important;
+    font-size: 0.95rem;
+    border-radius: 10px !important;
+  }
+  .sidebar-item-icon {
+    width: 22px;
+    height: 22px;
+  }
+  .sidebar-item-label {
+    display: inline !important;
+    font-size: 0.95rem;
+  }
+
+  /* Main content full width */
+  .shell-main {
+    margin-left: 0 !important;
+  }
+
+  /* Topbar mobile adjustments */
+  .topbar-center {
+    display: none;
+  }
+  .topbar-profile-info {
+    display: none;
+  }
+  .topbar-logo-text {
+    font-size: 0.85rem !important;
+    letter-spacing: 1px !important;
+  }
+  .topbar-right {
+    gap: 4px !important;
+  }
+  .topbar-icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+
+  /* ═══ MOBILE BOTTOM NAV ═══ */
+  .mobile-bottom-nav {
+    display: flex !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 64px;
+    background: rgba(8,8,8,0.97);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(212,175,55,0.1);
+    z-index: 1500;
+    align-items: center;
+    justify-content: space-around;
+    padding: 0 8px;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .mobile-bottom-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 8px 12px;
+    color: var(--text-muted);
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    cursor: pointer;
+    background: none;
+    border: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mobile-bottom-nav-item.active {
+    color: var(--gold);
+  }
+  .mobile-bottom-nav-item svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Add bottom padding to main content for bottom nav */
+  .shell-main {
+    padding-bottom: 72px;
+  }
+
+  /* Mobile search overlay */
+  .mobile-search-overlay {
+    display: flex !important;
+    position: fixed;
+    inset: 0;
+    z-index: 3000;
+    background: rgba(3,3,3,0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    flex-direction: column;
+    padding: 16px;
+  }
+  .mobile-search-overlay input {
+    width: 100%;
+    height: 52px;
+    background: var(--bg-card);
+    border: 1px solid rgba(212,175,55,0.2);
+    border-radius: 12px;
+    color: white;
+    font-size: 1rem;
+    padding: 0 16px 0 48px;
+    outline: none;
+  }
+  .mobile-search-overlay input:focus {
+    border-color: var(--gold);
+  }
+}
+
+/* ═══ TABLET BREAKPOINT ═══ */
+@media (max-width: 1024px) and (min-width: 901px) {
+  .shell-sidebar {
+    width: 60px;
+  }
+  .shell-sidebar .sidebar-item-label,
+  .shell-sidebar .sidebar-item-badge,
+  .shell-sidebar .sidebar-footer {
+    display: none;
+  }
+  .shell-main {
+    margin-left: 60px;
+  }
+}
+
+/* ═══ SMALL MOBILE ═══ */
+@media (max-width: 480px) {
+  .shell-sidebar.open {
+    width: 100%;
+  }
+  .topbar-logo-text {
+    display: none !important;
+  }
+  .shell-topbar {
+    padding: 0 12px !important;
+  }
+  .mobile-bottom-nav-item {
+    padding: 8px 8px;
+    font-size: 0.6rem;
+  }
+  .auth-modal {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    border-radius: 16px 16px 0 0 !important;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+/* ═══ FOLDABLE DEVICES (Samsung Z Fold) ═══ */
+@media (min-width: 300px) and (max-width: 400px) {
+  .shell-sidebar.open {
+    width: 100%;
+  }
+  .topbar-logo-text {
+    display: none !important;
+  }
+}
+
+/* Hide bottom nav on desktop */
+.mobile-bottom-nav {
+  display: none;
+}
+.sidebar-overlay {
+  display: none;
+}
+.mobile-search-overlay {
+  display: none !important;
 }
 
 /* ═══════════ FLOATING MESSENGER ═══════════ */
